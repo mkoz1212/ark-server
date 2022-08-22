@@ -1,17 +1,17 @@
-FROM ubuntu:20.04
+ARG BASE=ubuntu:22.04
+FROM ${BASE}
 
 MAINTAINER mickoz84
 LABEL maintainer="mickoz84"
 
 # Install dependencies
-RUN DEBIAN_FRONTEND=noninteractive apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y libc6-i386 lib32gcc1 curl wget locales && \
-    locale-gen en_US.UTF-8 && update-locale && \
-    rm -rf /var/lib/apt/lists/*
-
+RUN apt-get update -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y libc6-i386 lib32gcc-s1 curl wget locales \
+    && rm -rf /var/lib/apt/lists/* \
+    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+    
 # Set env variables
 ENV LANG en_US.UTF-8
-ENV LANGUAGE en
 
 # Create steam user
 RUN adduser --disabled-login --shell /bin/bash --gecos "" steam 
