@@ -12,7 +12,6 @@ docker pull ${BASE}
 
 # Build docker image
 docker build \
-    --no-cache \
     --file Dockerfile \
     --build-arg BASE=${BASE} \
     --tag ark-server:$(date +%Y-%m-%d) \
