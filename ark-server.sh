@@ -58,8 +58,9 @@ function start_server {
     # Setup map name and port
     setup_map ${MAP} ${PORT}
 
-    # Set query port based on client port
-    QUERY_PORT=$((27015+PORT-7777))
+    # Set raw and query port based on client port
+    RAW_PORT=$((PORT+1))
+    QUERY_PORT=$((PORT-7777+27015))
 
     # Set up game options
     GAME_OPTS="${MAP}?listen"
@@ -93,13 +94,12 @@ function start_server {
         GAME_PARAMS="${GAME_PARAMS} -ActiveEvent=${EVENT}"
     fi
 
-    GAME_PARAMS="${GAME_PARAMS} -NoBattlEye -noantispeedhack -exclusivejoin -ForceAllowCaveFlyers -NoTransferFromFiltering"
-    GAME_PARAMS="${GAME_PARAMS} -automanagedmods -server -high -log"
+    # Add additional Parameter from settings.cfg and some default parameters necessary for the server
+    GAME_PARAMS="${GAME_PARAMS} ${ADDITIONAL_PARAMS} -automanagedmods -server -high -log"
 
     echo "-----------"
     echo "Starting ARK Server with map: $MAP_NAME ($MAP)"
-    echo "Using port: $PORT"
-    echo "Using query port: $QUERY_PORT"
+    echo "Using ports: $PORT, $RAW_PORT, $QUERY_PORT"
     echo "-----------"
     CMD="/home/steam/ark/ShooterGame/Binaries/Linux/ShooterGameServer ${GAME_OPTS} ${GAME_PARAMS}"
     echo $CMD
@@ -107,10 +107,10 @@ function start_server {
 
     docker run -d --rm \
         --volume ${HOST_STEAM_PATH}:/home/steam \
-        -p ${PORT}:${PORT}/udp \
-        -p $((PORT+1)):$((PORT+1))/udp \
-        -p ${QUERY_PORT}:${QUERY_PORT}/udp \
-        --ulimit nofile=1000000:1000000 \
+        --publish ${PORT}:${PORT}/udp \
+        --publish ${RAW_PORT}:${RAW_PORT}/udp \
+        --publish ${QUERY_PORT}:${QUERY_PORT}/udp \
+        --ulimit nofile=100000:100000 \
         --workdir=/home/steam/ark/ShooterGame/Saved/Logs \
         --name ArkServer-${MAP_NAME} \
         ark-server:latest ${CMD}
